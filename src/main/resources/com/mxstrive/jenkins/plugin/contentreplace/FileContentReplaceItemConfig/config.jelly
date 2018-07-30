@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+	xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
+	xmlns:f="/lib/form">
+	<style type="text/css">
+		[name="_.search"] { width: calc(50% - 100px); }
+		[name="_.replace"] { width: calc(50% - 100px); }
+	</style>
+	<f:entry field="forHelp">
+		<span>${%Search}</span>
+		<f:textbox field="search"/>
+		<span style="margin-left: 10px;">${%Replace}</span>
+		<f:textbox field="replace"/>
+	</f:entry>
+</j:jelly>

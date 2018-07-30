@@ -1,0 +1,30 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+	xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
+	xmlns:f="/lib/form">
+	<style type="text/css">
+	</style>
+	<f:entry title="${%FilePath}" field="filePath">
+		<f:textbox />
+	</f:entry>
+	<f:entry title="${%Matcher}" field="configs">
+		<f:repeatable field="configs" noAddButton="true"
+			minimum="1">
+			<table width="100%">
+				<st:include
+					class="com.mxstrive.jenkins.plugin.contentreplace.FileContentReplaceItemConfig"
+					page="config.jelly" />
+
+				<f:entry>
+					<div align="right">
+						<input type="button" value="${%Add}"
+							class="repeatable-add show-if-last" />
+						<input type="button" value="${%Delete}"
+							class="repeatable-delete show-if-not-only"
+							style="margin-left: 1em;" />
+					</div>
+				</f:entry>
+			</table>
+		</f:repeatable>
+	</f:entry>
+</j:jelly>
