@@ -7,6 +7,16 @@
 	<f:entry title="${%FilePath}" field="filePath">
 		<f:textbox />
 	</f:entry>
+	<f:entry name="fileEncoding" title="File encoding"
+		field="fileEncoding">
+		<select name="fileEncoding">
+			<option value="UTF-8">UTF-8</option>
+			<option value="GBK">GBK</option>
+			<option value="ASCII">ASCII</option>
+			<option value="ISO-8859-1">ISO-8859-1</option>
+			<option value="UTF-16">UTF-16</option>
+		</select>
+	</f:entry>
 	<f:entry title="${%Matcher}" field="configs">
 		<f:repeatable field="configs" noAddButton="true"
 			minimum="1">

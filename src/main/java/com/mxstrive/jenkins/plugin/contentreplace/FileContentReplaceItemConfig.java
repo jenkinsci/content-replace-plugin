@@ -3,6 +3,7 @@ package com.mxstrive.jenkins.plugin.contentreplace;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -18,8 +19,8 @@ public class FileContentReplaceItemConfig extends AbstractDescribableImpl<FileCo
 
 	@DataBoundConstructor
 	public FileContentReplaceItemConfig(String search, String replace) {
-		this.search = search;
-		this.replace = replace;
+		this.search = StringUtils.strip(search);
+		this.replace = StringUtils.strip(replace);
 	}
 
 	public String getSearch() {
