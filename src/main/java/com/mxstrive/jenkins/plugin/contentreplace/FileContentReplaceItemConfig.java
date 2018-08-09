@@ -4,6 +4,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -31,6 +32,7 @@ public class FileContentReplaceItemConfig extends AbstractDescribableImpl<FileCo
 		return replace;
 	}
     
+	@Symbol("fileContentReplaceItemConfig")
 	@Extension
 	public static class DescriptorImpl extends Descriptor<FileContentReplaceItemConfig> {
 

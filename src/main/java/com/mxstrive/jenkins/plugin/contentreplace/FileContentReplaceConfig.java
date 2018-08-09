@@ -3,6 +3,7 @@ package com.mxstrive.jenkins.plugin.contentreplace;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -38,6 +39,7 @@ public class FileContentReplaceConfig extends AbstractDescribableImpl<FileConten
 		return configs;
 	}
 
+	@Symbol("fileContentReplaceConfig")
 	@Extension
 	public static class DescriptorImpl extends Descriptor<FileContentReplaceConfig> {
 
