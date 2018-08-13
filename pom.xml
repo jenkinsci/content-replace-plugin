@@ -76,16 +76,19 @@
 
 	<developers>
 		<developer>
-			<id>moxun</id>
+			<id>moxun1639</id>
 			<name>Moxun</name>
 			<email>mxnstrive@gmail.com</email>
 		</developer>
 	</developers>
 
-	<!-- Assuming you want to host on @jenkinsci: <url>https://wiki.jenkins.io/display/JENKINS/TODO+Plugin</url> 
-		<scm> <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection> 
-		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection> 
-		<url>https://github.com/jenkinsci/${project.artifactId}-plugin</url> </scm> -->
+	<url>https://wiki.jenkins.io/display/JENKINS/Content+Replace+Plugin</url>
+	<scm>
+        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+  	</scm>
+  	
 	<repositories>
 		<repository>
 			<id>repo.jenkins-ci.org</id>
