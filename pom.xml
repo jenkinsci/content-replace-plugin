@@ -8,7 +8,6 @@
 		<artifactId>plugin</artifactId>
 		<version>3.4</version>
 	</parent>
-	<groupId>com.mxstrive.jenkins.plugins</groupId>
 	<artifactId>content-replace</artifactId>
 	<version>1.0.1-SNAPSHOT</version>
 	<packaging>hpi</packaging>
