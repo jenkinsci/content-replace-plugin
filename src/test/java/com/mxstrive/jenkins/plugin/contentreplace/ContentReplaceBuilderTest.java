@@ -32,7 +32,7 @@ public class ContentReplaceBuilderTest {
     	file = new File(getClass().getResource(".").getPath() + "tmp.txt");
     	configs = new ArrayList<>();
     	List<FileContentReplaceItemConfig> cfgs = new ArrayList<>();
-    	cfgs.add(new FileContentReplaceItemConfig("(Version=)\\d+.\\d+.\\d+", "$11.0.${BUILD_ID}"));
+    	cfgs.add(new FileContentReplaceItemConfig("(Version=)\\d+.\\d+.\\d+", "$11.0.${BUILD_ID}", 0));
     	FileUtils.write(file, content, Charset.forName(fileEncoding));
     	configs.add(new FileContentReplaceConfig(file.getAbsolutePath(), fileEncoding, cfgs));
     }
@@ -49,7 +49,7 @@ public class ContentReplaceBuilderTest {
         project.getBuildersList().add(builder);
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-        jenkins.assertLogContains("(Version=)\\d+.\\d+.\\d+ => $11.0." + build.getNumber(), build);
+        jenkins.assertLogContains("replace times: 1, [(Version=)\\d+.\\d+.\\d+] => [$11.0." + build.getNumber() + "]", build);
         Assert.assertEquals(FileUtils.readFileToString(file, Charset.forName(fileEncoding)), "Version=1.0." + build.getNumber());
     }
 

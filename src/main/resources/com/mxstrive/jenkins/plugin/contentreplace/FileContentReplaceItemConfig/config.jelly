@@ -3,13 +3,21 @@
 	xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
 	xmlns:f="/lib/form">
 	<style type="text/css">
-		[name="_.search"] { width: calc(50% - 100px); }
-		[name="_.replace"] { width: calc(50% - 100px); }
+		.item-name {
+			display: inline-block;
+			width: 90px;
+			text-align: right;
+		}
+		[name="_.search"] { width: calc(50% - 154px); }
+		[name="_.replace"] { width: calc(50% - 154px); }
+		[name="_.matchCount"] { width: 40px; margin-left: 4px;}
 	</style>
 	<f:entry field="forHelp">
-		<span>${%Search}</span>
+		<span class="item-name">${%Search}</span>
 		<f:textbox field="search"/>
-		<span style="margin-left: 10px;">${%Replace}</span>
+		<span class="item-name">${%Replace}</span>
 		<f:textbox field="replace"/>
+		<span class="item-name" style="width: 74px">${%MatchCount}</span>
+		<f:number field="matchCount" value="1"/>
 	</f:entry>
 </j:jelly>

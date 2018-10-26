@@ -17,11 +17,13 @@ public class FileContentReplaceItemConfig extends AbstractDescribableImpl<FileCo
 
 	private String search;
 	private String replace;
+	private int matchCount;
 
 	@DataBoundConstructor
-	public FileContentReplaceItemConfig(String search, String replace) {
+	public FileContentReplaceItemConfig(String search, String replace, int matchCount) {
 		this.search = StringUtils.strip(search);
 		this.replace = StringUtils.strip(replace);
+		this.matchCount = matchCount;
 	}
 
 	public String getSearch() {
@@ -32,6 +34,10 @@ public class FileContentReplaceItemConfig extends AbstractDescribableImpl<FileCo
 		return replace;
 	}
     
+	public int getMatchCount() {
+		return matchCount;
+	}
+
 	@Symbol("fileContentReplaceItemConfig")
 	@Extension
 	public static class DescriptorImpl extends Descriptor<FileContentReplaceItemConfig> {

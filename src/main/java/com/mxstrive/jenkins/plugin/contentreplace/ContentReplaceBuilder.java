@@ -73,8 +73,14 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 			if (!assertEnvVarsExpanded(replace, run, listener)) {
 				return;
 			}
-			content = content.replaceAll(cfg.getSearch(), replace);
-			log.println(cfg.getSearch() + " => " + replace);
+			Matcher matcher = Pattern.compile(cfg.getSearch()).matcher(content);
+			if (cfg.getMatchCount() != 0 && matcher.groupCount() != cfg.getMatchCount()) {
+				listener.getLogger().println("[" + cfg.getSearch() + "]"+ " match count is " + matcher.groupCount() + " not equals " + cfg.getMatchCount() + "(in config)");
+				run.setResult(Result.FAILURE);
+				return;
+			}
+			content = matcher.replaceAll(replace);
+			log.println("replace times: " + matcher.groupCount() + ", [" + cfg.getSearch() + "] => [" + replace + "]");
 		}
 		FileUtils.write(file, content, Charset.forName(config.getFileEncoding()));
 	}
