@@ -61,7 +61,7 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	
 	private void replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		FilePath filePath = ensureFileExisted(path, run, workspace, listener);
+		FilePath filePath = ensureFileExisted(envVars.expand(path), run, workspace, listener);
 		if (filePath == null) {
 			return;
 		}
@@ -98,7 +98,7 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	private FilePath ensureFileExisted(String path, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		FilePath filePath = workspace.child(path);
 		if (!filePath.exists()) {
-			listener.getLogger().println(Messages.Message_errors_fileNotFound());
+			listener.getLogger().println(path + " " + Messages.Message_errors_fileNotFound());
 			run.setResult(Result.FAILURE);
 			return null;
 		} else if (filePath.isDirectory()) {
