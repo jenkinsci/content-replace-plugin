@@ -18,6 +18,6 @@
 		<span class="item-name">${%Replace}</span>
 		<f:textbox field="replace"/>
 		<span class="item-name">${%MatchCount}</span>
-		<f:number field="matchCount" value="1"/>
+		<f:number field="matchCount" default="0"/>
 	</f:entry>
 </j:jelly>
