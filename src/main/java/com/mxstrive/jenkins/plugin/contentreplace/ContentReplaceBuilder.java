@@ -55,19 +55,19 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	private void replaceFileContent(FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		String[] paths = config.getFilePath().split(",");
 		for (String path : paths) {
-			replaceFileContent(path, config, envVars, run, workspace, listener);
+			replaceFileContent(envVars.expand(path), config, envVars, run, workspace, listener);
 		}
 	}
 	
 	private void replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		FilePath filePath = ensureFileExisted(envVars.expand(path), run, workspace, listener);
+		FilePath filePath = ensureFileExisted(path, run, workspace, listener);
 		if (filePath == null) {
 			return;
 		}
 		File file = new File(filePath.toURI());
 		String content = FileUtils.readFileToString(file, Charset.forName(config.getFileEncoding()));
-		listener.getLogger().println("replace file content: " + config.getFilePath());
+		listener.getLogger().println("replace file content: " + path);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
 			if (!assertEnvVarsExpanded(replace, run, listener)) {
@@ -96,7 +96,11 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	}
 	
 	private FilePath ensureFileExisted(String path, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
-		FilePath filePath = workspace.child(path);
+		FilePath filePath = new FilePath(new File(path));
+		if (filePath.exists()) {
+			return filePath;
+		}
+		filePath = workspace.child(path);
 		if (!filePath.exists()) {
 			listener.getLogger().println(path + " " + Messages.Message_errors_fileNotFound());
 			run.setResult(Result.FAILURE);
