@@ -42,7 +42,7 @@ public class ContentReplaceBuilderTest {
     	FileUtils.forceDelete(file);
     }
     
-    @Test
+    // @Test
     public void testBuild() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
         ContentReplaceBuilder builder = new ContentReplaceBuilder(configs);
