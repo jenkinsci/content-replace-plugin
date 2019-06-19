@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,6 +71,9 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 
 		listener.getLogger().println("replace content of file: " + filePath);
 
+		Stream<String> lines = Files.lines(filePath);
+		String content = String.join("/n", lines.collect(Collectors.toList()));
+
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
 			if (!assertEnvVarsExpanded(replace, run, listener)) {
@@ -77,8 +81,8 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 			}
 
 			Stream<String> countLines = Files.lines(filePath);
-			int count = StringUtils.countMatches(String.join("", countLines.collect(Collectors.toList())), cfg.getSearch());
-			log.println("The quantity of the " + cfg.getSearch() + " in this file is: " + count);
+			Matcher matcher = Pattern.compile(cfg.getSearch()).matcher(String.join("\n", countLines.collect(Collectors.toList())));
+			int count = matcher.groupCount();
 			countLines.close();
 			if (cfg.getMatchCount() != 0 && count != cfg.getMatchCount()) {
 				listener.getLogger().println("[" + cfg.getSearch() + "]"+ " match count is " + count + " not equals " + cfg.getMatchCount() + "(in config)");
@@ -86,13 +90,12 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 				return;
 			}
 
-			Stream<String> lines = Files.lines(filePath);
-            List<String> replaced = lines.map(line -> line.replaceAll(cfg.getSearch(), replace)).collect(Collectors.toList());
-            Files.write(filePath, replaced);
-            lines.close();
-
-			log.println("replace times: [" + cfg.getSearch() + "] => [" + replace + "]");
+			content = matcher.replaceAll(replace);
+			log.println("replace times: " + count + ", [" + cfg.getSearch() + "] => [" + replace + "]");
 		}
+
+		Files.write(filePath, Collections.singleton(content));
+		lines.close();
 
 	}
 
@@ -108,7 +111,7 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	
 	private Path ensureFileExisted(String path, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 
-		Path filePath = Paths.get(path);
+		Path filePath = Paths.get(workspace.child(path).getRemote());
 		if (filePath == null || filePath.toFile() == null) {
 			listener.getLogger().println(path + " " + Messages.Message_errors_fileNotFound());
 			run.setResult(Result.FAILURE);
