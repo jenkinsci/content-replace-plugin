@@ -1,14 +1,18 @@
 package com.mxstrive.jenkins.plugin.contentreplace;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.Charset;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -60,29 +64,41 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	
 	private void replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		FilePath filePath = ensureFileExisted(envVars.expand(path), run, workspace, listener);
+		Path filePath = ensureFileExisted(envVars.expand(path), run, workspace, listener);
 		if (filePath == null) {
 			return;
 		}
-		String content = IOUtils.toString(filePath.read(), Charset.forName(config.getFileEncoding()));
+
 		listener.getLogger().println("replace content of file: " + filePath);
+
+		Stream<String> lines = Files.lines(filePath);
+		String content = String.join("/n", lines.collect(Collectors.toList()));
+
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
 			if (!assertEnvVarsExpanded(replace, run, listener)) {
 				return;
 			}
-			Matcher matcher = Pattern.compile(cfg.getSearch()).matcher(content);
-			if (cfg.getMatchCount() != 0 && matcher.groupCount() != cfg.getMatchCount()) {
-				listener.getLogger().println("[" + cfg.getSearch() + "]"+ " match count is " + matcher.groupCount() + " not equals " + cfg.getMatchCount() + "(in config)");
+
+			Stream<String> countLines = Files.lines(filePath);
+			Matcher matcher = Pattern.compile(cfg.getSearch()).matcher(String.join("\n", countLines.collect(Collectors.toList())));
+			int count = matcher.groupCount();
+			countLines.close();
+			if (cfg.getMatchCount() != 0 && count != cfg.getMatchCount()) {
+				listener.getLogger().println("[" + cfg.getSearch() + "]"+ " match count is " + count + " not equals " + cfg.getMatchCount() + "(in config)");
 				run.setResult(Result.FAILURE);
 				return;
 			}
+
 			content = matcher.replaceAll(replace);
-			log.println("replace times: " + matcher.groupCount() + ", [" + cfg.getSearch() + "] => [" + replace + "]");
+			log.println("replace times: " + count + ", [" + cfg.getSearch() + "] => [" + replace + "]");
 		}
-		filePath.write(content, config.getFileEncoding());
+
+		Files.write(filePath, Collections.singleton(content));
+		lines.close();
+
 	}
-		
+
 	private boolean assertEnvVarsExpanded(String replace, Run<?, ?> run, TaskListener listener) {
 		List<String> evs = findUnexpandEnvVars(replace);
 		if (!evs.isEmpty()) {
@@ -93,13 +109,15 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		return true;
 	}
 	
-	private FilePath ensureFileExisted(String path, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
-		FilePath filePath = workspace.child(path);
-		if (!filePath.exists()) {
+	private Path ensureFileExisted(String path, Run<?, ?> run, FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
+
+		Path filePath = Paths.get(workspace.child(path).getRemote());
+		if (filePath == null || filePath.toFile() == null) {
 			listener.getLogger().println(path + " " + Messages.Message_errors_fileNotFound());
 			run.setResult(Result.FAILURE);
 			return null;
-		} else if (filePath.isDirectory()) {
+		}
+		if(filePath.toFile().isDirectory()) {
 			listener.getLogger().println(path + " " + Messages.Message_errors_isNotAFile());
 			run.setResult(Result.FAILURE);
 			return null;

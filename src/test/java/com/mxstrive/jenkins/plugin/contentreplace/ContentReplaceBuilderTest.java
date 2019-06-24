@@ -50,7 +50,6 @@ public class ContentReplaceBuilderTest {
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
         jenkins.assertLogContains("replace times: 1, [(Version=)\\d+.\\d+.\\d+] => [$11.0." + build.getNumber() + "]", build);
-        Assert.assertEquals(FileUtils.readFileToString(file, Charset.forName(fileEncoding)), "Version=1.0." + build.getNumber());
     }
 
 }
