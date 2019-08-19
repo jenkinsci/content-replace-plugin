@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -67,23 +68,31 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 			return;
 		}
 		InputStream is = filePath.read();
-		String content = IOUtils.toString(is, Charset.forName(config.getFileEncoding()));
+		List<String> lines = IOUtils.readLines(is, Charset.forName(config.getFileEncoding()));
 		is.close();
+		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
 		listener.getLogger().println("replace content of file: " + filePath);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
 			if (!assertEnvVarsExpanded(replace, run, listener)) {
 				return;
 			}
-			Matcher matcher = Pattern.compile(cfg.getSearch()).matcher(content);
-			if (cfg.getMatchCount() != 0 && matcher.groupCount() != cfg.getMatchCount()) {
-				listener.getLogger().println("[" + cfg.getSearch() + "]" + " match count is " + matcher.groupCount()
+			Pattern pattern = Pattern.compile(cfg.getSearch());
+			int matchCount = 0;
+			for (int i = 0, size = lines.size(); i < size; i++) {
+				Matcher matcher = pattern.matcher(lines.get(i));
+				if (matcher.matches()) {
+					++matchCount;
+				}
+			}
+			if (cfg.getMatchCount() != 0 && matchCount != cfg.getMatchCount()) {
+				listener.getLogger().println("[" + cfg.getSearch() + "]" + " match count is " + matchCount
 						+ " not equals " + cfg.getMatchCount() + "(in config)");
 				run.setResult(Result.FAILURE);
 				return;
 			}
-			content = matcher.replaceAll(replace);
-			log.println("replace times: " + matcher.groupCount() + ", [" + cfg.getSearch() + "] => [" + replace + "]");
+			log.println("replace times: " + matchCount + ", [" + cfg.getSearch() + "] => [" + replace + "]");
+			content = pattern.matcher(content).replaceAll(replace);
 		}
 		filePath.write(content, config.getFileEncoding());
 	}
