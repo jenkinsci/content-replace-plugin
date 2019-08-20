@@ -81,7 +81,7 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 			int matchCount = 0;
 			for (int i = 0, size = lines.size(); i < size; i++) {
 				Matcher matcher = pattern.matcher(lines.get(i));
-				if (matcher.matches()) {
+				while (matcher.find()) {
 					++matchCount;
 				}
 			}
