@@ -4,7 +4,9 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -18,14 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
+public class ContentReplaceBuilder extends Builder {
 
 	private List<FileContentReplaceConfig> configs;
 
@@ -44,28 +45,39 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	}
 
 	@Override
-	public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener)
+	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
 			throws InterruptedException, IOException {
-		EnvVars envVars = new EnvVars(run.getEnvironment(listener));
+		EnvVars envVars = new EnvVars(build.getEnvironment(listener));
+		boolean rc = true;
 		for (FileContentReplaceConfig config : configs) {
-			replaceFileContent(config, envVars, run, workspace, listener);
+			rc &= replaceFileContent(config, envVars, build, listener);
+			if (!rc) {
+				break;
+			}
 		}
+		build.setResult(rc ? Result.SUCCESS : Result.FAILURE);
+		return rc;
 	}
 
-	private void replaceFileContent(FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run, FilePath workspace,
+	private boolean replaceFileContent(FileContentReplaceConfig config, EnvVars envVars, AbstractBuild<?, ?> build,
 			TaskListener listener) throws InterruptedException, IOException {
 		String[] paths = config.getFilePath().split(",");
+		boolean rc = true;
 		for (String path : paths) {
-			replaceFileContent(path, config, envVars, run, workspace, listener);
+			rc &= replaceFileContent(path, config, envVars, build, listener);
+			if (!rc) {
+				break;
+			}
 		}
+		return rc;
 	}
 
-	private void replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run,
-			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
+	private boolean replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars,
+			AbstractBuild<?, ?> build, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		FilePath filePath = ensureFileExisted(envVars.expand(path), run, workspace, listener);
+		FilePath filePath = ensureFileExisted(envVars.expand(path), build.getWorkspace(), listener);
 		if (filePath == null) {
-			return;
+			return false;
 		}
 		InputStream is = filePath.read();
 		List<String> lines = IOUtils.readLines(is, Charset.forName(config.getFileEncoding()));
@@ -74,8 +86,8 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		listener.getLogger().println("replace content of file: " + filePath);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
-			if (!assertEnvVarsExpanded(replace, run, listener)) {
-				return;
+			if (!assertEnvVarsExpanded(replace, listener)) {
+				return false;
 			}
 			Pattern pattern = Pattern.compile(cfg.getSearch());
 			int matchCount = 0;
@@ -88,35 +100,32 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 			if (cfg.getMatchCount() != 0 && matchCount != cfg.getMatchCount()) {
 				listener.getLogger().println("[" + cfg.getSearch() + "]" + " match count is " + matchCount
 						+ " not equals " + cfg.getMatchCount() + "(in config)");
-				run.setResult(Result.FAILURE);
-				return;
+				return false;
 			}
 			log.println("replace times: " + matchCount + ", [" + cfg.getSearch() + "] => [" + replace + "]");
 			content = pattern.matcher(content).replaceAll(replace);
 		}
 		filePath.write(content, config.getFileEncoding());
+		return true;
 	}
 
-	private boolean assertEnvVarsExpanded(String replace, Run<?, ?> run, TaskListener listener) {
+	private boolean assertEnvVarsExpanded(String replace, TaskListener listener) {
 		List<String> evs = findUnexpandEnvVars(replace);
 		if (!evs.isEmpty()) {
 			listener.getLogger().println("can't find envVars: " + evs);
-			run.setResult(Result.FAILURE);
 			return false;
 		}
 		return true;
 	}
 
-	private FilePath ensureFileExisted(String path, Run<?, ?> run, FilePath workspace, TaskListener listener)
+	private FilePath ensureFileExisted(String path, FilePath workspace, TaskListener listener)
 			throws InterruptedException, IOException {
 		FilePath filePath = workspace.child(path);
 		if (!filePath.exists()) {
 			listener.getLogger().println(path + " " + Messages.Message_errors_fileNotFound());
-			run.setResult(Result.FAILURE);
 			return null;
 		} else if (filePath.isDirectory()) {
 			listener.getLogger().println(path + " " + Messages.Message_errors_isNotAFile());
-			run.setResult(Result.FAILURE);
 			return null;
 		}
 		return filePath;
