@@ -75,7 +75,11 @@ public class ContentReplaceBuilder extends Builder {
 	private boolean replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars,
 			AbstractBuild<?, ?> build, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		FilePath filePath = ensureFileExisted(envVars.expand(path), build.getWorkspace(), listener);
+		FilePath workspace = build.getWorkspace();
+		if (workspace == null) {
+			return false;
+		}
+		FilePath filePath = ensureFileExisted(envVars.expand(path), workspace, listener);
 		if (filePath == null) {
 			return false;
 		}
