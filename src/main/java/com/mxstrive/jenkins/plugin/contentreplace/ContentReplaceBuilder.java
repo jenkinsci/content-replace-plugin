@@ -8,7 +8,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -86,29 +85,35 @@ public class ContentReplaceBuilder extends Builder {
 		InputStream is = filePath.read();
 		List<String> lines = IOUtils.readLines(is, Charset.forName(config.getFileEncoding()));
 		is.close();
-		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
 		listener.getLogger().println("replace content of file: " + filePath);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
 			if (!assertEnvVarsExpanded(replace, listener)) {
 				return false;
 			}
-			Pattern pattern = Pattern.compile(cfg.getSearch());
-			int matchCount = 0;
+			Pattern pattern = Pattern.compile(cfg.getSearch(), Pattern.MULTILINE);
+			List<Integer> matchedLineIndexs = new ArrayList<Integer>();
 			for (int i = 0, size = lines.size(); i < size; i++) {
 				Matcher matcher = pattern.matcher(lines.get(i));
 				while (matcher.find()) {
-					++matchCount;
+					matchedLineIndexs.add(i);
 				}
 			}
-			if (cfg.getMatchCount() != 0 && matchCount != cfg.getMatchCount()) {
-				listener.getLogger().println("[" + cfg.getSearch() + "]" + " match count is " + matchCount
+			if (cfg.getMatchCount() != 0 && matchedLineIndexs.size() != cfg.getMatchCount()) {
+				listener.getLogger().println("[" + cfg.getSearch() + "]" + " match count is " + matchedLineIndexs.size()
 						+ " not equals " + cfg.getMatchCount() + "(in config)");
 				return false;
 			}
-			log.println("replace times: " + matchCount + ", [" + cfg.getSearch() + "] => [" + replace + "]");
-			content = pattern.matcher(content).replaceAll(replace);
+			for (Integer i : matchedLineIndexs) {
+				String line = lines.get(i);
+				String newLine = pattern.matcher(line).replaceFirst(replace);
+				lines.set(i, newLine);
+				log.println("replace : [" + line + "] => [" + newLine + "]");
+			}
+			log.println(
+					"replace times: " + matchedLineIndexs.size() + ", [" + cfg.getSearch() + "] => [" + replace + "]");
 		}
+		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
 		filePath.write(content, config.getFileEncoding());
 		return true;
 	}
