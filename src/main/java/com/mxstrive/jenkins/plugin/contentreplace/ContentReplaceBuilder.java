@@ -47,6 +47,8 @@ public class ContentReplaceBuilder extends Builder {
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
 			throws InterruptedException, IOException {
 		EnvVars envVars = new EnvVars(build.getEnvironment(listener));
+		PrintStream log = listener.getLogger();
+		log.println("content-replace start");
 		boolean rc = true;
 		for (FileContentReplaceConfig config : configs) {
 			rc &= replaceFileContent(config, envVars, build, listener);
@@ -54,6 +56,7 @@ public class ContentReplaceBuilder extends Builder {
 				break;
 			}
 		}
+		log.println("content-replace end");
 		build.setResult(rc ? Result.SUCCESS : Result.FAILURE);
 		return rc;
 	}
@@ -85,7 +88,7 @@ public class ContentReplaceBuilder extends Builder {
 		InputStream is = filePath.read();
 		List<String> lines = IOUtils.readLines(is, Charset.forName(config.getFileEncoding()));
 		is.close();
-		listener.getLogger().println("replace content of file: " + filePath);
+		listener.getLogger().println(" > replace content of file: " + filePath);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
 			if (!assertEnvVarsExpanded(replace, listener)) {
@@ -100,18 +103,19 @@ public class ContentReplaceBuilder extends Builder {
 				}
 			}
 			if (cfg.getMatchCount() != 0 && matchedLineIndexs.size() != cfg.getMatchCount()) {
-				listener.getLogger().println("[" + cfg.getSearch() + "]" + " match count is " + matchedLineIndexs.size()
-						+ " not equals " + cfg.getMatchCount() + "(in config)");
+				listener.getLogger().println("   > [" + cfg.getSearch() + "]" + " match count is "
+						+ matchedLineIndexs.size() + " not equals " + cfg.getMatchCount() + "(in config)");
 				return false;
 			}
 			for (Integer i : matchedLineIndexs) {
 				String line = lines.get(i);
 				String newLine = pattern.matcher(line).replaceFirst(replace);
 				lines.set(i, newLine);
-				log.println("replace : [" + line + "] => [" + newLine + "]");
+				log.println("   > replace : [" + line + "] => [" + newLine + "]");
 			}
 			log.println(
-					"replace times: " + matchedLineIndexs.size() + ", [" + cfg.getSearch() + "] => [" + replace + "]");
+					"   > replace times: " + matchedLineIndexs.size() + ", [" + cfg.getSearch() + "] => [" + replace
+							+ "]");
 		}
 		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
 		filePath.write(content, config.getFileEncoding());
@@ -121,7 +125,7 @@ public class ContentReplaceBuilder extends Builder {
 	private boolean assertEnvVarsExpanded(String replace, TaskListener listener) {
 		List<String> evs = findUnexpandEnvVars(replace);
 		if (!evs.isEmpty()) {
-			listener.getLogger().println("can't find envVars: " + evs);
+			listener.getLogger().println("   > can't find envVars: " + evs);
 			return false;
 		}
 		return true;
@@ -131,10 +135,10 @@ public class ContentReplaceBuilder extends Builder {
 			throws InterruptedException, IOException {
 		FilePath filePath = workspace.child(path);
 		if (!filePath.exists()) {
-			listener.getLogger().println(path + " " + Messages.Message_errors_fileNotFound());
+			listener.getLogger().println("   > " + path + " " + Messages.Message_errors_fileNotFound());
 			return null;
 		} else if (filePath.isDirectory()) {
-			listener.getLogger().println(path + " " + Messages.Message_errors_isNotAFile());
+			listener.getLogger().println("   > " + path + " " + Messages.Message_errors_isNotAFile());
 			return null;
 		}
 		return filePath;
