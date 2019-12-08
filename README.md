@@ -40,6 +40,12 @@ filePath: 'versions.txt') \])
 
 ## Changelog
 
+### Version 1.3.0 (Dec 07, 2019)
+
+-   enables RegEx multiline mode
+-   print replace lines info
+-   beautify log
+
 ### Version 1.2.0 (Nov 23, 2019)
 
 -   Move docs to GitHub
