@@ -8,6 +8,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -19,13 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
+import org.jfree.util.Log;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-public class ContentReplaceBuilder extends Builder {
+public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 
 	private List<FileContentReplaceConfig> configs;
 
@@ -46,27 +49,41 @@ public class ContentReplaceBuilder extends Builder {
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
 			throws InterruptedException, IOException {
-		EnvVars envVars = new EnvVars(build.getEnvironment(listener));
+		FilePath workspace = build.getWorkspace();
+		if (workspace == null) {
+			listener.getLogger().println("workspace can't be null");
+			return false;
+		}
+		this.perform(build, workspace, launcher, listener);
+		Result result = build.getResult();
+		return result == null || !result.equals(Result.FAILURE);
+	}
+
+	@Override
+	public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener)
+			throws InterruptedException, IOException {
+		EnvVars envVars = new EnvVars(run.getEnvironment(listener));
 		PrintStream log = listener.getLogger();
 		log.println("content-replace start");
 		boolean rc = true;
 		for (FileContentReplaceConfig config : configs) {
-			rc &= replaceFileContent(config, envVars, build, listener);
+			rc &= replaceFileContent(config, envVars, run, workspace, listener);
 			if (!rc) {
 				break;
 			}
 		}
 		log.println("content-replace end");
-		build.setResult(rc ? Result.SUCCESS : Result.FAILURE);
-		return rc;
+		if (!rc) {
+			run.setResult(Result.FAILURE);
+		}
 	}
 
-	private boolean replaceFileContent(FileContentReplaceConfig config, EnvVars envVars, AbstractBuild<?, ?> build,
-			TaskListener listener) throws InterruptedException, IOException {
+	private boolean replaceFileContent(FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run,
+			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		String[] paths = config.getFilePath().split(",");
 		boolean rc = true;
 		for (String path : paths) {
-			rc &= replaceFileContent(path, config, envVars, build, listener);
+			rc &= replaceFileContent(path, config, envVars, run, workspace, listener);
 			if (!rc) {
 				break;
 			}
@@ -74,10 +91,9 @@ public class ContentReplaceBuilder extends Builder {
 		return rc;
 	}
 
-	private boolean replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars,
-			AbstractBuild<?, ?> build, TaskListener listener) throws InterruptedException, IOException {
+	private boolean replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run,
+			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		FilePath workspace = build.getWorkspace();
 		if (workspace == null) {
 			return false;
 		}
@@ -113,9 +129,8 @@ public class ContentReplaceBuilder extends Builder {
 				lines.set(i, newLine);
 				log.println("   > replace : [" + line + "] => [" + newLine + "]");
 			}
-			log.println(
-					"   > replace times: " + matchedLineIndexs.size() + ", [" + cfg.getSearch() + "] => [" + replace
-							+ "]");
+			log.println("   > replace times: " + matchedLineIndexs.size() + ", [" + cfg.getSearch() + "] => [" + replace
+					+ "]");
 		}
 		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
 		filePath.write(content, config.getFileEncoding());
