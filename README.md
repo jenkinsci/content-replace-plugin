@@ -40,6 +40,10 @@ filePath: 'versions.txt') \])
 
 ## Changelog
 
+### Version 1.4.0 (Jan 09, 2020)
+
+-   Fixed, contentReplace does not appear in the Snippet Generator
+
 ### Version 1.3.0 (Dec 07, 2019)
 
 -   enables RegEx multiline mode
