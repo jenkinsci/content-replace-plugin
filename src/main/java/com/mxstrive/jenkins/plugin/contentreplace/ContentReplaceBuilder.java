@@ -12,6 +12,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -24,7 +25,6 @@ import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
-import org.jfree.util.Log;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -93,14 +93,23 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 
 	private boolean replaceFileContent(String path, FileContentReplaceConfig config, EnvVars envVars, Run<?, ?> run,
 			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
-		PrintStream log = listener.getLogger();
 		if (workspace == null) {
 			return false;
 		}
-		FilePath filePath = ensureFileExisted(envVars.expand(path), workspace, listener);
-		if (filePath == null) {
+		List<FilePath> filePaths = getTargetFiles(envVars.expand(path), workspace, listener);
+		if (filePaths.isEmpty()) {
 			return false;
 		}
+		boolean result = true;
+		for (int i = 0, size = filePaths.size(); result && i < size; i++) {
+			result = replaceFileContent(filePaths.get(i), config, envVars, workspace, listener);
+		}
+		return result;
+	}
+
+	private boolean replaceFileContent(FilePath filePath, FileContentReplaceConfig config, EnvVars envVars,
+			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
+		PrintStream log = listener.getLogger();
 		InputStream is = filePath.read();
 		List<String> lines = IOUtils.readLines(is, Charset.forName(config.getFileEncoding()));
 		is.close();
@@ -146,17 +155,51 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		return true;
 	}
 
-	private FilePath ensureFileExisted(String path, FilePath workspace, TaskListener listener)
+	private List<FilePath> getTargetFiles(String path, FilePath workspace, TaskListener listener)
 			throws InterruptedException, IOException {
-		FilePath filePath = workspace.child(path);
-		if (!filePath.exists()) {
-			listener.getLogger().println("   > " + path + " " + Messages.Message_errors_fileNotFound());
-			return null;
-		} else if (filePath.isDirectory()) {
-			listener.getLogger().println("   > " + path + " " + Messages.Message_errors_isNotAFile());
-			return null;
+		List<FilePath> result = new ArrayList<FilePath>();
+		Matcher matcher = Pattern.compile("(.*?)\\*(.*)").matcher(path);
+		if (!matcher.matches()) {
+			FilePath filePath = workspace.child(path);
+			if (ensureFileExisted(filePath, listener)) {
+				result.add(filePath);
+			}
+			return result;
 		}
-		return filePath;
+		String basePath = matcher.group(1);
+		int idx = Math.max(basePath.lastIndexOf("\\"), basePath.lastIndexOf("/"));
+		if (idx != -1) {
+			basePath = basePath.substring(0, idx);
+		} else {
+			basePath = "";
+		}
+		FilePath[] matchedFilePaths = null;
+		try {
+			matchedFilePaths = workspace.child(basePath).list(path.substring(basePath.equals("") ? 0 : basePath.length() + 1));
+		} catch (Exception e) {
+			e.printStackTrace();
+			listener.getLogger().println("   > " + path + " list file fail");
+			return result;
+		}
+		for (int i = 0; i < matchedFilePaths.length; i++) {
+			FilePath filePath = matchedFilePaths[i];
+			if (ensureFileExisted(filePath, listener)) {
+				result.add(filePath);
+			}
+		}
+		return result;
+	}
+
+	private boolean ensureFileExisted(FilePath filePath, TaskListener listener)
+			throws IOException, InterruptedException {
+		if (!filePath.exists()) {
+			listener.getLogger().println("   > " + filePath + " " + Messages.Message_errors_fileNotFound());
+			return false;
+		} else if (filePath.isDirectory()) {
+			listener.getLogger().println("   > " + filePath + " " + Messages.Message_errors_isNotAFile());
+			return false;
+		}
+		return true;
 	}
 
 	private List<String> findUnexpandEnvVars(String src) {
