@@ -40,6 +40,10 @@ filePath: 'versions.txt') \])
 
 ## Changelog
 
+### Version 1.5.0 (Jan 19, 2020)
+
+-   Add, support filepath of Ant path style
+
 ### Version 1.4.0 (Jan 09, 2020)
 
 -   Fixed, contentReplace does not appear in the Snippet Generator
