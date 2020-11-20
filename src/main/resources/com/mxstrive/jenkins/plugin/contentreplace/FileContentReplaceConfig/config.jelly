@@ -1,7 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
 	xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
-	xmlns:f="/lib/form">
+	xmlns:f="/lib/form"
+	xmlns:cr="/lib/contentreplace">
 	<style type="text/css">
 	</style>
 	<f:entry title="${%FilePath}" field="filePath">
@@ -20,7 +21,7 @@
 	<f:entry title="${%Matcher}" field="configs">
 		<f:repeatable field="configs" noAddButton="true"
 			minimum="1">
-			<table width="100%">
+			<cr:blockWrapper>
 				<st:include
 					class="com.mxstrive.jenkins.plugin.contentreplace.FileContentReplaceItemConfig"
 					page="config.jelly" />
@@ -34,7 +35,7 @@
 							style="margin-left: 1em;" />
 					</div>
 				</f:entry>
-			</table>
+			</cr:blockWrapper>
 		</f:repeatable>
 	</f:entry>
 </j:jelly>
