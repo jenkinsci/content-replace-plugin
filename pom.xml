@@ -4,13 +4,16 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>3.4</version>
+		<version>4.13</version>
 	</parent>
 	<artifactId>content-replace</artifactId>
-	<version>1.5.2-SNAPSHOT</version>
+	<version>${revision}${changelist}</version>
 	<packaging>hpi</packaging>
 	<properties>
-		<jenkins.version>2.7.3</jenkins.version>
+		<revision>1.5.2</revision>
+		<changelist>-SNAPSHOT</changelist>
+		<gitHubRepo>jenkinsci/content-replace-plugin</gitHubRepo>
+		<jenkins.version>2.204.6</jenkins.version>
 		<java.level>8</java.level>
 	</properties>
 	<name>Content Replace</name>
@@ -25,51 +28,55 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>structs</artifactId>
-			<version>1.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-step-api</artifactId>
-			<version>2.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-cps</artifactId>
-			<version>2.39</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-job</artifactId>
-			<version>2.11.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-basic-steps</artifactId>
-			<version>2.6</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-durable-task-step</artifactId>
-			<version>2.13</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-api</artifactId>
-			<version>2.20</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-support</artifactId>
-			<version>2.14</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.jenkins.tools.bom</groupId>
+				<artifactId>bom-2.204.x</artifactId>
+				<version>17</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<developers>
 		<developer>
@@ -81,10 +88,10 @@
 
 	<url>https://github.com/jenkinsci/content-replace-plugin</url>
 	<scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>HEAD</tag>
+        <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
+        <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+        <url>https://github.com/${gitHubRepo}</url>
+        <tag>${scmTag}</tag>
   </scm>
   	
 	<repositories>
