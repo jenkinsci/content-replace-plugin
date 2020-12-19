@@ -22,7 +22,7 @@ expressions.
 
 ### Jenkins
 
-Jenkins [version 2.7.3](https://jenkins.io/changelog#v2.7.3) or newer is
+Jenkins [version 2.204.6](https://jenkins.io/changelog#v2.204.6) or newer is
 required.
 
   
@@ -39,6 +39,10 @@ replace: '$11.0.${BUILD\_ID}', matchCount: 1) \], fileEncoding: 'UTF-8',
 filePath: 'versions.txt') \])
 
 ## Changelog
+
+### Version 1.6.0 (Dec 19, 2020)
+
+-   Update the required version of Jenkins to v2.204.6
 
 ### Version 1.5.0 (Jan 19, 2020)
 
