@@ -43,12 +43,26 @@ public class ContentReplaceBuilderTest {
     }
 
     @Test
-    public void testBuild() throws Exception {
+    public void testBuildQuiet() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
         ContentReplaceBuilder builder = new ContentReplaceBuilder(configs);
         project.getBuildersList().add(builder);
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
+        jenkins.assertLogNotContains("   > replace : [Version=0.0.0] => [Version=1.0." + build.getNumber() + "]", build);
+        jenkins.assertLogContains("   > replace times: 1, [(Version=)\\d+.\\d+.\\d+] => [$11.0." + build.getNumber() + "]", build);
+        Assert.assertEquals(FileUtils.readFileToString(file, Charset.forName(fileEncoding)), "Version=1.0." + build.getNumber());
+    }
+
+    @Test
+    public void testBuildVerbose() throws Exception {
+        configs.get(0).getConfigs().get(0).setVerbose(true);
+        FreeStyleProject project = jenkins.createFreeStyleProject();
+        ContentReplaceBuilder builder = new ContentReplaceBuilder(configs);
+        project.getBuildersList().add(builder);
+
+        FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
+        jenkins.assertLogContains("   > replace : [Version=0.0.0] => [Version=1.0." + build.getNumber() + "]", build);
         jenkins.assertLogContains("   > replace times: 1, [(Version=)\\d+.\\d+.\\d+] => [$11.0." + build.getNumber() + "]", build);
         Assert.assertEquals(FileUtils.readFileToString(file, Charset.forName(fileEncoding)), "Version=1.0." + build.getNumber());
     }
