@@ -6,6 +6,7 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import hudson.Extension;
@@ -18,12 +19,18 @@ public class FileContentReplaceItemConfig extends AbstractDescribableImpl<FileCo
 	private String search;
 	private String replace;
 	private int matchCount;
+	private boolean verbose;
 
 	@DataBoundConstructor
 	public FileContentReplaceItemConfig(String search, String replace, int matchCount) {
 		this.search = StringUtils.strip(search);
 		this.replace = StringUtils.strip(replace);
 		this.matchCount = matchCount;
+	}
+
+	@DataBoundSetter
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
 	}
 
 	public String getSearch() {
@@ -36,6 +43,10 @@ public class FileContentReplaceItemConfig extends AbstractDescribableImpl<FileCo
     
 	public int getMatchCount() {
 		return matchCount;
+	}
+
+	public boolean isVerbose() {
+		return verbose;
 	}
 
 	@Symbol("fileContentReplaceItemConfig")
