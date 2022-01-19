@@ -8,9 +8,10 @@
 			width: 90px;
 			text-align: right;
 		}
-		[name="_.search"] { width: calc(50% - 170px); }
-		[name="_.replace"] { width: calc(50% - 170px); }
-		[name="_.matchCount"] { width: 40px; margin-left: 4px;}
+		[name="_.search"] { width: calc(40% - 170px); }
+		[name="_.replace"] { width: calc(40% - 170px); }
+		[name="_.matchCount"] { width: calc(20% - 170px); }
+		[name="_.verbose"]{ width: 40px; margin-left: 4px;}
 	</style>
 	<f:entry field="forHelp">
 		<span class="item-name">${%Search}</span>
@@ -19,5 +20,7 @@
 		<f:textbox field="replace"/>
 		<span class="item-name">${%MatchCount}</span>
 		<f:number field="matchCount" default="0"/>
+		<span class="item-name">${%Verbose}</span>
+		<f:checkbox field="verbose"/>
 	</f:entry>
 </j:jelly>
