@@ -136,7 +136,9 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 				String line = lines.get(i);
 				String newLine = pattern.matcher(line).replaceFirst(replace);
 				lines.set(i, newLine);
-				log.println("   > replace : [" + line + "] => [" + newLine + "]");
+				if (cfg.isVerbose()) {
+					log.println("   > replace : [" + line + "] => [" + newLine + "]");
+				}
 			}
 			log.println("   > replace times: " + matchedLineIndexs.size() + ", [" + cfg.getSearch() + "] => [" + replace
 					+ "]");
