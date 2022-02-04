@@ -12,7 +12,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -140,8 +139,10 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 					log.println("   > replace : [" + line + "] => [" + newLine + "]");
 				}
 			}
-			log.println("   > replace times: " + matchedLineIndexs.size() + ", [" + cfg.getSearch() + "] => [" + replace
-					+ "]");
+			if (cfg.isVerbose()) {
+				log.println("   > replace times: " + matchedLineIndexs.size() + ", [" + cfg.getSearch() + "] => ["
+						+ replace + "]");
+			}
 		}
 		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
 		filePath.write(content, config.getFileEncoding());

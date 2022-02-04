@@ -19,18 +19,10 @@ public class FileContentReplaceItemConfig extends AbstractDescribableImpl<FileCo
 	private String search;
 	private String replace;
 	private int matchCount;
-	private boolean verbose;
+	private Boolean verbose;
 
 	@DataBoundConstructor
-	public FileContentReplaceItemConfig(String search, String replace, int matchCount) {
-		this.search = StringUtils.strip(search);
-		this.replace = StringUtils.strip(replace);
-		this.matchCount = matchCount;
-	}
-
-	@DataBoundSetter
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
+	public FileContentReplaceItemConfig() {
 	}
 
 	public String getSearch() {
@@ -46,7 +38,27 @@ public class FileContentReplaceItemConfig extends AbstractDescribableImpl<FileCo
 	}
 
 	public boolean isVerbose() {
-		return verbose;
+		return verbose == null ? Boolean.TRUE : verbose;
+	}
+
+	@DataBoundSetter
+	public void setSearch(String search) {
+		this.search = search;
+	}
+
+	@DataBoundSetter
+	public void setReplace(String replace) {
+		this.replace = replace;
+	}
+
+	@DataBoundSetter
+	public void setMatchCount(int matchCount) {
+		this.matchCount = matchCount;
+	}
+
+	@DataBoundSetter
+	public void setVerbose(Boolean verbose) {
+		this.verbose = verbose;
 	}
 
 	@Symbol("fileContentReplaceItemConfig")
