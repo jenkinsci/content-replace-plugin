@@ -32,13 +32,29 @@ required.
 ![Freestyle](./doc/Freestyle-job-configuration.png)
 
 #### Pipeline job configuration
-
-contentReplace( configs: \[ fileContentReplaceConfig( configs: \[
-fileContentReplaceItemConfig( search: '(Version=)\\\\d+.\\\\d+.\\\\d+',
-replace: '$11.0.${BUILD\_ID}', matchCount: 1) \], fileEncoding: 'UTF-8',
-filePath: 'versions.txt') \])
+```
+contentReplace(
+  configs: [
+    fileContentReplaceConfig(
+      configs: [
+        fileContentReplaceItemConfig(
+          search: '(Version=)([0-9]+\\.[0-9]+\\.[0-9]+)',
+          replace: '$11.0.${BUILD_ID}',
+          matchCount: 1,
+          verbose: false,
+        )
+      ],
+      fileEncoding: 'UTF-8',
+       'versions.txt'
+    )
+  ]
+)
+```
 
 ## Changelog
+### Version 1.7.0 (Feb 04, 2022)
+
+-   Add, support verbose output control
 
 ### Version 1.6.0 (Dec 19, 2020)
 
