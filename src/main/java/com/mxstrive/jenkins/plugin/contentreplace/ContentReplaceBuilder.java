@@ -144,7 +144,7 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 						+ replace + "]");
 			}
 		}
-		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
+		String content = StringUtils.join(lines, System.lineSeparator());
 		filePath.write(content, config.getFileEncoding());
 		return true;
 	}
