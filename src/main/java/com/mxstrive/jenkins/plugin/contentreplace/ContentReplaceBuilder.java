@@ -15,6 +15,7 @@ import hudson.tasks.Builder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -145,8 +146,23 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 			}
 		}
 		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
+		if (hasTrailingNewline(filePath)) {
+			content += IOUtils.LINE_SEPARATOR;
+		}
 		filePath.write(content, config.getFileEncoding());
 		return true;
+	}
+
+	static boolean hasTrailingNewline(FilePath filePath) throws IOException {
+		try (RandomAccessFile file = new RandomAccessFile(filePath.getRemote(), "r")) {
+			long fileLength = file.length();
+			if (fileLength == 0) {
+				return false;
+			}
+			file.seek(fileLength - 1);
+			byte lastByte = file.readByte();
+			return lastByte == '\n' || lastByte == '\r';
+		}
 	}
 
 	private boolean assertEnvVarsExpanded(String replace, TaskListener listener) {
