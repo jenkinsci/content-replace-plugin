@@ -1,0 +1,1 @@
+Test if a trailing newline is detected. Should be True.
