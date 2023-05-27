@@ -1,5 +1,19 @@
 package com.mxstrive.jenkins.plugin.contentreplace;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -12,20 +26,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import jenkins.tasks.SimpleBuildStep;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 
 public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 
@@ -110,7 +111,7 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
 		InputStream is = filePath.read();
-		List<String> lines = IOUtils.readLines(is, Charset.forName(config.getFileEncoding()));
+		List<String> lines = readLines(is, Charset.forName(config.getFileEncoding()));
 		is.close();
 		listener.getLogger().println(" > replace content of file: " + filePath);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
@@ -144,9 +145,39 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 						+ replace + "]");
 			}
 		}
-		String content = StringUtils.join(lines, IOUtils.LINE_SEPARATOR);
+		String content = String.join(config.getLineSeparator(), lines);
 		filePath.write(content, config.getFileEncoding());
 		return true;
+	}
+
+	private List<String> readLines(InputStream is, Charset charset) {
+		List<String> ss = new ArrayList<>();
+		InputStreamReader isr = new InputStreamReader(is, charset);
+		StringBuilder sb = new StringBuilder();
+		try {
+			char cr = 0;
+			while (isr.ready()) {
+				cr = (char)isr.read();
+				if (cr == '\r') {
+					continue;
+				} else if (cr == '\n') {
+					ss.add(sb.toString());
+					sb.delete(0, sb.length());
+				} else {
+					sb.append(cr);
+				}
+			}
+			if (sb.length() > 0) {
+				ss.add(sb.toString());
+			} else {				
+				ss.add("");
+			}
+			if (cr == '\n') {
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return ss;
 	}
 
 	private boolean assertEnvVarsExpanded(String replace, TaskListener listener) {

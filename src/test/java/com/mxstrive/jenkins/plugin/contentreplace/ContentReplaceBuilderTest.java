@@ -23,6 +23,7 @@ public class ContentReplaceBuilderTest {
     public JenkinsRule jenkins = new JenkinsRule();
 
     private String fileEncoding = "UTF-8";
+    private String lineSeparator = "Unix";
 	private String content = "Version=0.0.0";
 	private File file;
 	private List<FileContentReplaceConfig> configs;
@@ -39,7 +40,9 @@ public class ContentReplaceBuilderTest {
 		cfg.setVerbose(true);
 		cfgs.add(cfg);
     	FileUtils.write(file, content, Charset.forName(fileEncoding));
-    	configs.add(new FileContentReplaceConfig(file.getAbsolutePath(), fileEncoding, cfgs));
+    	FileContentReplaceConfig config = new FileContentReplaceConfig(file.getAbsolutePath(), fileEncoding, cfgs);
+    	config.setLineSeparator(lineSeparator);
+    	configs.add(config);
     }
 
     @After

@@ -8,14 +8,20 @@
 	<f:entry title="${%FilePath}" field="filePath">
 		<f:textbox />
 	</f:entry>
-	<f:entry name="fileEncoding" title="File encoding"
-		field="fileEncoding">
+	<f:entry title="${%FileEncoding}" name="fileEncoding" field="fileEncoding">
 		<select name="fileEncoding">
 			<option value="UTF-8">UTF-8</option>
 			<option value="GBK">GBK</option>
 			<option value="ASCII">ASCII</option>
 			<option value="ISO-8859-1">ISO-8859-1</option>
 			<option value="UTF-16">UTF-16</option>
+		</select>
+	</f:entry>
+	<f:entry title="${%LineSeparator}" name="lineSeparator" field="lineSeparator">
+		<select name="lineSeparator">
+			<option value="System">System</option>
+			<option value="Unix">Unix</option>
+			<option value="Windows">Windows</option>
 		</select>
 	</f:entry>
 	<f:entry title="${%Matcher}" field="configs">
