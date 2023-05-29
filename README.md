@@ -52,6 +52,11 @@ contentReplace(
 ```
 
 ## Changelog
+### Version 1.8.0 (May 29, 2023)
+
+-   Add, support "line separator" config
+-   Fixed, [JENKINS-70550] Content Replace Plugin Eats Trailing Newlines
+
 ### Version 1.7.0 (Feb 04, 2022)
 
 -   Add, support verbose output control
