@@ -7,10 +7,10 @@
 		<version>4.13</version>
 	</parent>
 	<artifactId>content-replace</artifactId>
-	<version>1.8.0</version>
+	<version>${revision}${changelist}</version>
 	<packaging>hpi</packaging>
 	<properties>
-		<revision>1.7.1</revision>
+		<revision>1.8.1</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<gitHubRepo>jenkinsci/content-replace-plugin</gitHubRepo>
 		<jenkins.version>2.204.6</jenkins.version>
@@ -91,7 +91,7 @@
         <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
         <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
         <url>https://github.com/${gitHubRepo}</url>
-        <tag>content-replace-1.8.0</tag>
+        <tag>${scmTag}</tag>
   </scm>
   	
 	<repositories>
