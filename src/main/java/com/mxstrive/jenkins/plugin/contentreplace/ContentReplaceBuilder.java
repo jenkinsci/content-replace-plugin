@@ -145,37 +145,31 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 						+ replace + "]");
 			}
 		}
-		String content = String.join(config.getLineSeparator(), lines);
+		String content = String.join(config.getLineSeparatorString(), lines);
 		filePath.write(content, config.getFileEncoding());
 		return true;
 	}
 
-	private List<String> readLines(InputStream is, Charset charset) {
+	private List<String> readLines(InputStream is, Charset charset) throws IOException {
 		List<String> ss = new ArrayList<>();
 		InputStreamReader isr = new InputStreamReader(is, charset);
 		StringBuilder sb = new StringBuilder();
-		try {
-			char cr = 0;
-			while (isr.ready()) {
-				cr = (char)isr.read();
-				if (cr == '\r') {
-					continue;
-				} else if (cr == '\n') {
-					ss.add(sb.toString());
-					sb.delete(0, sb.length());
-				} else {
-					sb.append(cr);
-				}
-			}
-			if (sb.length() > 0) {
+		char cr = 0;
+		while (isr.ready()) {
+			cr = (char)isr.read();
+			if (cr == '\r') {
+				continue;
+			} else if (cr == '\n') {
 				ss.add(sb.toString());
-			} else {				
-				ss.add("");
+				sb.delete(0, sb.length());
+			} else {
+				sb.append(cr);
 			}
-			if (cr == '\n') {
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		}
+		if (sb.length() > 0) {
+			ss.add(sb.toString());
+		} else {				
+			ss.add("");
 		}
 		return ss;
 	}
