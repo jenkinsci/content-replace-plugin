@@ -53,6 +53,10 @@ contentReplace(
 ```
 
 ## Changelog
+### Version 1.8.1 (Jun 25, 2023)
+-   Fixed, configuration values echo in the interface
+-   Fixed, Expected named arguments java error
+
 ### Version 1.8.0 (May 29, 2023)
 
 -   Add, support "line separator" config
