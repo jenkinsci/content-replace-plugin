@@ -45,6 +45,7 @@ contentReplace(
         )
       ],
       fileEncoding: 'UTF-8',
+      lineSeparator: 'Unix',
       filePath: 'versions.txt'
     )
   ]
