@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Collections;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -110,9 +111,11 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	private boolean replaceFileContent(FilePath filePath, FileContentReplaceConfig config, EnvVars envVars,
 			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		InputStream is = filePath.read();
-		List<String> lines = readLines(is, Charset.forName(config.getFileEncoding()));
-		is.close();
+		List<String> lines = Collections.emptyList();
+		try (InputStream is = filePath.read();
+				InputStreamReader isr = new InputStreamReader(is, charset);) {
+			lines = readLines(isr, Charset.forName(config.getFileEncoding()));
+		}
 		listener.getLogger().println(" > replace content of file: " + filePath);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
@@ -150,13 +153,12 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		return true;
 	}
 
-	private List<String> readLines(InputStream is, Charset charset) throws IOException {
+	private List<String> readLines(InputStreamReader isr) throws IOException {
 		List<String> ss = new ArrayList<>();
-		InputStreamReader isr = new InputStreamReader(is, charset);
 		StringBuilder sb = new StringBuilder();
 		char cr = 0;
 		while (isr.ready()) {
-			cr = (char)isr.read();
+			cr = (char) isr.read();
 			if (cr == '\r') {
 				continue;
 			} else if (cr == '\n') {
@@ -168,7 +170,7 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		}
 		if (sb.length() > 0) {
 			ss.add(sb.toString());
-		} else {				
+		} else {
 			ss.add("");
 		}
 		return ss;
@@ -203,7 +205,8 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		}
 		FilePath[] matchedFilePaths = null;
 		try {
-			matchedFilePaths = workspace.child(basePath).list(path.substring(basePath.equals("") ? 0 : basePath.length() + 1));
+			matchedFilePaths = workspace.child(basePath)
+					.list(path.substring(basePath.equals("") ? 0 : basePath.length() + 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 			listener.getLogger().println("   > " + path + " list file fail");
