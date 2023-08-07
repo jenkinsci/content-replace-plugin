@@ -1,7 +1,5 @@
 package com.mxstrive.jenkins.plugin.contentreplace;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.charset.spi.CharsetProvider;
 import java.util.Arrays;
 import java.util.List;
 

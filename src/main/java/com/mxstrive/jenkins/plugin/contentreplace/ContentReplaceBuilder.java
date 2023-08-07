@@ -111,10 +111,11 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	private boolean replaceFileContent(FilePath filePath, FileContentReplaceConfig config, EnvVars envVars,
 			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
+		Charset charset = Charset.forName(config.getFileEncoding());
 		List<String> lines = Collections.emptyList();
 		try (InputStream is = filePath.read();
 				InputStreamReader isr = new InputStreamReader(is, charset);) {
-			lines = readLines(isr, Charset.forName(config.getFileEncoding()));
+			lines = readLines(isr);
 		}
 		listener.getLogger().println(" > replace content of file: " + filePath);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
