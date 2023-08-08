@@ -1,3 +1,5 @@
 .settings/
+.devcontainer/
+.vscode/
 target/
 work/
