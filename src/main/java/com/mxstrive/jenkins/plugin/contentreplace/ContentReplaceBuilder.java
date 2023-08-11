@@ -157,14 +157,15 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	private List<String> readLines(InputStreamReader isr) throws IOException {
 		List<String> ss = new ArrayList<>();
 		StringBuilder sb = new StringBuilder();
-		char cr = 0;
-		while (isr.ready()) {
-			cr = (char) isr.read();
+
+		int next;
+		while ((next = isr.read()) != -1) {
+			char cr = (char) next;
 			if (cr == '\r') {
 				continue;
 			} else if (cr == '\n') {
 				ss.add(sb.toString());
-				sb.delete(0, sb.length());
+				sb.setLength(0);
 			} else {
 				sb.append(cr);
 			}
