@@ -1,5 +1,6 @@
 package com.mxstrive.jenkins.plugin.contentreplace;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -113,8 +114,8 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		PrintStream log = listener.getLogger();
 		Charset charset = Charset.forName(config.getFileEncoding());
 		List<String> lines = Collections.emptyList();
-		try (InputStream is = filePath.read();
-				InputStreamReader isr = new InputStreamReader(is, charset);) {
+		try (BufferedInputStream bis = new BufferedInputStream(filePath.read());
+				InputStreamReader isr = new InputStreamReader(bis, charset);) {
 			lines = readLines(isr);
 		}
 		listener.getLogger().println(" > replace content of file: " + filePath);
@@ -207,8 +208,7 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		}
 		FilePath[] matchedFilePaths = null;
 		try {
-			matchedFilePaths = workspace.child(basePath)
-					.list(path.substring(basePath.equals("") ? 0 : basePath.length() + 1));
+			matchedFilePaths = workspace.child(basePath).list(path.substring(basePath.equals("") ? 0 : basePath.length() + 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 			listener.getLogger().println("   > " + path + " list file fail");
