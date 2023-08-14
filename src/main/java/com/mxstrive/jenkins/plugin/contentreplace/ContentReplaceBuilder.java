@@ -1,5 +1,6 @@
 package com.mxstrive.jenkins.plugin.contentreplace;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Collections;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -110,9 +112,12 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 	private boolean replaceFileContent(FilePath filePath, FileContentReplaceConfig config, EnvVars envVars,
 			FilePath workspace, TaskListener listener) throws InterruptedException, IOException {
 		PrintStream log = listener.getLogger();
-		InputStream is = filePath.read();
-		List<String> lines = readLines(is, Charset.forName(config.getFileEncoding()));
-		is.close();
+		Charset charset = Charset.forName(config.getFileEncoding());
+		List<String> lines = Collections.emptyList();
+		try (BufferedInputStream bis = new BufferedInputStream(filePath.read());
+				InputStreamReader isr = new InputStreamReader(bis, charset);) {
+			lines = readLines(isr);
+		}
 		listener.getLogger().println(" > replace content of file: " + filePath);
 		for (FileContentReplaceItemConfig cfg : config.getConfigs()) {
 			String replace = envVars.expand(cfg.getReplace());
@@ -150,25 +155,25 @@ public class ContentReplaceBuilder extends Builder implements SimpleBuildStep {
 		return true;
 	}
 
-	private List<String> readLines(InputStream is, Charset charset) throws IOException {
+	private List<String> readLines(InputStreamReader isr) throws IOException {
 		List<String> ss = new ArrayList<>();
-		InputStreamReader isr = new InputStreamReader(is, charset);
 		StringBuilder sb = new StringBuilder();
-		char cr = 0;
-		while (isr.ready()) {
-			cr = (char)isr.read();
+
+		int next;
+		while ((next = isr.read()) != -1) {
+			char cr = (char) next;
 			if (cr == '\r') {
 				continue;
 			} else if (cr == '\n') {
 				ss.add(sb.toString());
-				sb.delete(0, sb.length());
+				sb.setLength(0);
 			} else {
 				sb.append(cr);
 			}
 		}
 		if (sb.length() > 0) {
 			ss.add(sb.toString());
-		} else {				
+		} else {
 			ss.add("");
 		}
 		return ss;
