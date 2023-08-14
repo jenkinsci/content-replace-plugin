@@ -7,7 +7,7 @@
 		<version>4.13</version>
 	</parent>
 	<artifactId>content-replace</artifactId>
-	<version>${revision}${changelist}</version>
+	<version>1.8.2</version>
 	<packaging>hpi</packaging>
 	<properties>
 		<revision>1.8.2</revision>
@@ -91,7 +91,7 @@
         <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
         <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
         <url>https://github.com/${gitHubRepo}</url>
-        <tag>${scmTag}</tag>
+        <tag>content-replace-1.8.2</tag>
   </scm>
   	
 	<repositories>
