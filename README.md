@@ -53,6 +53,10 @@ contentReplace(
 ```
 
 ## Changelog
+
+### Version 1.8.2 (Aug 14, 2023)
+-   Fixed, [JENKINS-71382] contentReplace 1.8.0 generates an empty file, 1.7.0 works ok
+
 ### Version 1.8.1 (Jun 25, 2023)
 -   Fixed, configuration values echo in the interface
 -   Fixed, Expected named arguments java error
