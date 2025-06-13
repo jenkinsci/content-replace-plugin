@@ -7,8 +7,8 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
@@ -74,7 +74,7 @@ public class FileContentReplaceConfig extends AbstractDescribableImpl<FileConten
 			return "";
 		}
 		
-		public FormValidation doCheckFilePath(@QueryParameter StaplerRequest req, @QueryParameter StaplerResponse rsp, @QueryParameter final String value) {
+		public FormValidation doCheckFilePath(@QueryParameter StaplerRequest2 req, @QueryParameter StaplerResponse2 rsp, @QueryParameter final String value) {
 			if(value.length() == 0) {
                 return FormValidation.error("Please set a file path.");
 			}
@@ -85,7 +85,7 @@ public class FileContentReplaceConfig extends AbstractDescribableImpl<FileConten
 			return fillListBoxModelOptions(new ListBoxModel(), LINE_SEPARATORS);
 		}
 
-		public FormValidation doCheckLineSeparator(@QueryParameter StaplerRequest req, @QueryParameter StaplerResponse rsp, @QueryParameter final String value) {
+		public FormValidation doCheckLineSeparator(@QueryParameter StaplerRequest2 req, @QueryParameter StaplerResponse2 rsp, @QueryParameter final String value) {
 			return checkOptionValue(value, LINE_SEPARATORS, "line separator.");
 		}
 
@@ -93,7 +93,7 @@ public class FileContentReplaceConfig extends AbstractDescribableImpl<FileConten
 			return fillListBoxModelOptions(new ListBoxModel(), FILE_ENCODINGS);
 		}
 
-		public FormValidation doCheckFileEncoding(@QueryParameter StaplerRequest req, @QueryParameter StaplerResponse rsp, @QueryParameter final String value) {
+		public FormValidation doCheckFileEncoding(@QueryParameter StaplerRequest2 req, @QueryParameter StaplerResponse2 rsp, @QueryParameter final String value) {
 			return checkOptionValue(value, FILE_ENCODINGS, "file encoding");
 		}
 
